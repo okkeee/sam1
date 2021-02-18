@@ -1,0 +1,58 @@
+Sub sample()
+
+    Set ST1 = Worksheets("Sheet1")
+    Set ST2 = Worksheets("Sheet2")
+    Set obj = CreateObject("Scripting.Dictionary")
+
+    'ST1シートの使用されている範囲を１行ごとに処理
+    For Each 行 In ST1.UsedRange.Rows
+
+        '各列の値を取得
+        A = 行.Columns("A")
+        B = 行.Columns("B")
+        C = 行.Columns("C")
+        D = 行.Columns("D")
+        E = 行.Columns("E")
+        F = 行.Columns("F")
+        
+        '余分なものを除去
+        C = Replace(C, ",", "")
+        D = Replace(D, "，", "")
+        E = Replace(E, "'", "")
+
+        'カンマで分割
+        E = Split(E, "，")
+        F = Split(F, "，")
+        
+
+        'Cが番号だったらB, C, Dをobjに入れる
+        If IsNumeric(C) Then
+            Date = Array(B, C, D)
+            Key = Join(Date, vbTab)
+            '重複は入れない
+            If Not obj.Exists(Key) Then
+            obj.Add Key, Date
+        End If
+    
+        'Eが番号だったらB, E, Fをobjに入れる（重複した場合は入れない）
+        For i = 0 To UBound(E)
+            If IsNumeric(E(i)) Then
+                データ = Array(B, E(i), F(i))
+                キー = Join(データ, vbTab)
+                If Not obj.Exists(キー) Then obj.Add キー, データ
+            End If
+        Next
+        DoEvents
+    Next
+
+    'objから取り出してST2シートに出力
+    For Each データ In obj.Items
+        連番 = 連番 + 1
+        ST2.Cells(連番, "A") = 連番
+        ST2.Cells(連番, "B") = データ(0)
+        ST2.Cells(連番, "C") = データ(1)
+        ST2.Cells(連番, "D") = データ(2)
+    Next
+
+
+End Sub
